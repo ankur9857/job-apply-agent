@@ -59,4 +59,256 @@
   .job-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
   .tag { background: var(--surface); border: 1px solid var(--border); color: var(--muted); font-size: 10px; padding: 3px 8px; border-radius: 6px; }
   .salary-tag { color: var(--warn); border-color: var(--warn)44; background: var(--warn)11; }
-  .ap
+  .apply-btn { width: 100%; background: linear-gradient(135deg, var(--accent)22, var(--accent2)22); border: 1px solid var(--accent)33; color: var(--accent); font-family: 'Syne', sans-serif; font-weight: 700; font-size: 13px; padding: 10px; border-radius: 12px; cursor: pointer; }
+  .apply-btn.applied { color: var(--muted); border-color: var(--border); background: var(--surface); cursor: default; }
+  .app-card { background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 16px; margin-bottom: 12px; }
+  .app-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+  .app-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 14px; }
+  .app-company { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .status-pill { font-size: 10px; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
+  .status-pill.applied { background: var(--accent)22; color: var(--accent); }
+  .cover-letter { background: var(--surface); border-radius: 10px; padding: 10px; font-size: 12px; color: var(--muted); line-height: 1.6; margin-top: 10px; border-left: 2px solid var(--accent)44; }
+  .app-date { font-size: 11px; color: var(--muted); margin-top: 8px; }
+  .log-box { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 14px; font-size: 11px; max-height: 150px; overflow-y: auto; margin-bottom: 14px; font-family: monospace; }
+  .log-line { color: var(--muted); margin-bottom: 3px; }
+  .log-line .tag-info { color: var(--accent2); }
+  .log-line .tag-success { color: var(--accent); }
+  .log-line .tag-apply { color: var(--warn); }
+  .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--accent)33; border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin-right: 6px; vertical-align: middle; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .empty { text-align: center; padding: 40px 20px; color: var(--muted); }
+  .empty-icon { font-size: 40px; margin-bottom: 10px; }
+  .empty-text { font-size: 14px; }
+  .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 430px; background: var(--surface); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 10px 0 20px; z-index: 50; }
+  .nav-item { display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; padding: 6px 16px; border-radius: 12px; transition: all 0.2s; }
+  .nav-item.active { background: var(--accent)15; }
+  .nav-icon { font-size: 20px; }
+  .nav-label { font-size: 10px; color: var(--muted); font-weight: 500; }
+  .nav-item.active .nav-label { color: var(--accent); }
+  .pb { padding-bottom: 80px; }
+  .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: var(--accent); color: #000; font-weight: 700; font-size: 13px; padding: 10px 20px; border-radius: 20px; z-index: 1000; display: none; white-space: nowrap; }
+  .toast.show { display: block; }
+  select.input-field { appearance: none; }
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="status-bar">
+    <span id="clock">--:--</span>
+    <span>📶 🔋</span>
+  </div>
+  <div class="header">
+    <div class="logo">JobBot 🤖</div>
+    <div class="subtitle">Tera AI Job Apply Agent</div>
+  </div>
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('home')">🏠 Home</div>
+    <div class="tab" onclick="switchTab('search')">🔍 Search</div>
+    <div class="tab" onclick="switchTab('auto')">⚡ Auto Apply</div>
+    <div class="tab" onclick="switchTab('applications')">📋 Applied</div>
+    <div class="tab" onclick="switchTab('profile')">👤 Profile</div>
+  </div>
+  <div id="page-home" class="page active pb">
+    <div class="stats-row">
+      <div class="stat-card green"><div class="stat-num" id="stat-applied">0</div><div class="stat-label">Applied</div></div>
+      <div class="stat-card blue"><div class="stat-num" id="stat-found">0</div><div class="stat-label">Found</div></div>
+      <div class="stat-card yellow"><div class="stat-num" id="stat-today">0</div><div class="stat-label">Today</div></div>
+    </div>
+    <div class="form-card">
+      <div class="form-title">🤖 Agent Status</div>
+      <div class="log-box" id="home-log">
+        <div class="log-line"><span class="tag-info">[INFO]</span> JobBot Agent initialized ✓</div>
+        <div class="log-line"><span class="tag-info">[INFO]</span> Gemini AI connected ✓</div>
+        <div class="log-line"><span class="tag-success">[READY]</span> Waiting for command...</div>
+      </div>
+      <button class="btn-primary" onclick="switchTab('auto')">⚡ Start Auto Apply</button>
+      <button class="btn-secondary" onclick="switchTab('search')">🔍 Search Jobs Manually</button>
+    </div>
+  </div>
+  <div id="page-search" class="page pb">
+    <div class="form-card">
+      <div class="form-title">🔍 Job Search</div>
+      <div class="input-group">
+        <div class="input-label">Job Role</div>
+        <input class="input-field" id="search-role" placeholder="e.g. Flutter Developer" value="Flutter Developer">
+      </div>
+      <div class="input-group">
+        <div class="input-label">Location</div>
+        <input class="input-field" id="search-location" placeholder="e.g. Remote, Bangalore" value="Remote">
+      </div>
+      <button class="btn-primary" id="search-btn" onclick="searchJobs()">🔍 Search Jobs</button>
+    </div>
+    <div id="job-results"></div>
+  </div>
+  <div id="page-auto" class="page pb">
+    <div class="form-card">
+      <div class="form-title">⚡ Auto Apply Agent</div>
+      <div class="input-group">
+        <div class="input-label">Job Role</div>
+        <input class="input-field" id="auto-role" placeholder="e.g. Android Developer" value="Android Developer">
+      </div>
+      <div class="input-group">
+        <div class="input-label">Location</div>
+        <input class="input-field" id="auto-location" placeholder="e.g. Remote" value="Remote">
+      </div>
+      <div class="input-group">
+        <div class="input-label">Apply Limit</div>
+        <select class="input-field" id="auto-limit">
+          <option value="3">3 Jobs</option>
+          <option value="5" selected>5 Jobs</option>
+          <option value="10">10 Jobs</option>
+        </select>
+      </div>
+      <button class="btn-primary" id="auto-btn" onclick="autoApply()">🚀 Start Agent</button>
+    </div>
+    <div class="log-box" id="auto-log" style="display:none"></div>
+    <div id="auto-results"></div>
+  </div>
+  <div id="page-applications" class="page pb">
+    <div id="app-list">
+      <div class="empty">
+        <div class="empty-icon">📋</div>
+        <div class="empty-text">Abhi tak koi application nahi<br>Auto Apply se shuru karo!</div>
+      </div>
+    </div>
+  </div>
+  <div id="page-profile" class="page pb">
+    <div class="form-card">
+      <div class="form-title">👤 Tera Profile</div>
+      <div class="input-group">
+        <div class="input-label">Tera Naam</div>
+        <input class="input-field" id="profile-name" placeholder="e.g. Rahul Sharma">
+      </div>
+      <div class="input-group">
+        <div class="input-label">Skills</div>
+        <input class="input-field" id="profile-skills" placeholder="e.g. Flutter, Dart, Firebase">
+      </div>
+      <div class="input-group">
+        <div class="input-label">Experience</div>
+        <input class="input-field" id="profile-exp" placeholder="e.g. 2 years">
+      </div>
+      <div class="input-group">
+        <div class="input-label">Expected Salary</div>
+        <input class="input-field" id="profile-salary" placeholder="e.g. 10-15 LPA">
+      </div>
+      <button class="btn-primary" onclick="saveProfile()">💾 Save Profile</button>
+    </div>
+  </div>
+  <div class="bottom-nav">
+    <div class="nav-item active" onclick="switchTab('home')" id="nav-home"><div class="nav-icon">🏠</div><div class="nav-label">Home</div></div>
+    <div class="nav-item" onclick="switchTab('search')" id="nav-search"><div class="nav-icon">🔍</div><div class="nav-label">Search</div></div>
+    <div class="nav-item" onclick="switchTab('auto')" id="nav-auto"><div class="nav-icon">⚡</div><div class="nav-label">Auto</div></div>
+    <div class="nav-item" onclick="switchTab('applications')" id="nav-applications"><div class="nav-icon">📋</div><div class="nav-label">Applied</div></div>
+    <div class="nav-item" onclick="switchTab('profile')" id="nav-profile"><div class="nav-icon">👤</div><div class="nav-label">Profile</div></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+  function updateClock() {
+    const now = new Date();
+    document.getElementById('clock').textContent = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+  }
+  setInterval(updateClock, 1000); updateClock();
+  function switchTab(tab) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('page-' + tab).classList.add('active');
+    document.getElementById('nav-' + tab).classList.add('active');
+    ['home','search','auto','applications','profile'].forEach((t,i) => { if(t===tab) document.querySelectorAll('.tab')[i].classList.add('active'); });
+  }
+  function showToast(msg) {
+    const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+  function saveProfile() {
+    localStorage.setItem('jobbot-profile', JSON.stringify({
+      name: document.getElementById('profile-name').value,
+      skills: document.getElementById('profile-skills').value,
+      experience: document.getElementById('profile-exp').value,
+      salary: document.getElementById('profile-salary').value,
+    }));
+    showToast('✅ Profile saved!');
+  }
+  function getProfile() { try { return JSON.parse(localStorage.getItem('jobbot-profile')) || {}; } catch { return {}; } }
+  function loadProfile() {
+    const p = getProfile();
+    if(p.name) document.getElementById('profile-name').value = p.name;
+    if(p.skills) document.getElementById('profile-skills').value = p.skills;
+    if(p.experience) document.getElementById('profile-exp').value = p.experience;
+    if(p.salary) document.getElementById('profile-salary').value = p.salary;
+  }
+  async function searchJobs() {
+    const btn = document.getElementById('search-btn');
+    btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Searching...';
+    document.getElementById('job-results').innerHTML = '';
+    try {
+      const res = await fetch('/api/search', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({role: document.getElementById('search-role').value, location: document.getElementById('search-location').value}) });
+      const data = await res.json();
+      document.getElementById('stat-found').textContent = data.jobs.length;
+      document.getElementById('job-results').innerHTML = data.jobs.map(job => `
+        <div class="job-card">
+          <div class="job-top"><div><div class="job-title">${job.title}</div><div class="company-name">${job.company} • ${job.location}</div></div><div class="match-badge">${job.match}% match</div></div>
+          <div class="job-tags">${job.skills.map(s=>`<span class="tag">${s}</span>`).join('')}<span class="tag salary-tag">₹${job.salary}</span></div>
+          <button class="apply-btn" onclick="applyJob(${JSON.stringify(job).replace(/"/g,'&quot;')}, this)">✅ Apply Now</button>
+        </div>`).join('');
+    } catch(e) { showToast('❌ Error! Check connection'); }
+    btn.disabled = false; btn.innerHTML = '🔍 Search Jobs';
+  }
+  async function applyJob(job, btn) {
+    btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Applying...';
+    try {
+      const res = await fetch('/api/apply', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({job, profile: getProfile()}) });
+      const data = await res.json();
+      if(data.success) { btn.className = 'apply-btn applied'; btn.innerHTML = '✓ Applied!'; updateStats(); showToast(`✅ Applied to ${job.title}!`); }
+    } catch(e) { btn.disabled = false; btn.innerHTML = '✅ Apply Now'; }
+  }
+  async function autoApply() {
+    const btn = document.getElementById('auto-btn');
+    const logBox = document.getElementById('auto-log');
+    logBox.style.display = 'block'; logBox.innerHTML = '';
+    document.getElementById('auto-results').innerHTML = '';
+    btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Agent Running...';
+    function log(msg) { logBox.innerHTML += `<div class="log-line">${msg}</div>`; logBox.scrollTop = logBox.scrollHeight; }
+    log('<span class="tag-info">[START]</span> Agent starting...');
+    await sleep(500);
+    log(`<span class="tag-info">[SEARCH]</span> Searching jobs...`);
+    try {
+      const res = await fetch('/api/auto-apply', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({role: document.getElementById('auto-role').value, location: document.getElementById('auto-location').value, limit: document.getElementById('auto-limit').value, profile: getProfile()}) });
+      const data = await res.json();
+      await sleep(300); log(`<span class="tag-info">[FOUND]</span> Jobs found ✓`);
+      await sleep(400); log(`<span class="tag-apply">[APPLYING]</span> Generating cover letters...`);
+      for(let i=0; i<data.applications.length; i++) { await sleep(400); log(`<span class="tag-success">[✓]</span> Applied to ${data.applications[i].job_title} at ${data.applications[i].company}`); }
+      await sleep(300); log(`<span class="tag-success">[DONE]</span> ${data.applications.length} applications sent! 🎉`);
+      updateStats();
+      document.getElementById('auto-results').innerHTML = `<div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:12px;">Applied Jobs 🎉</div>` + data.applications.map(app=>`
+        <div class="app-card">
+          <div class="app-header"><div><div class="app-title">${app.job_title}</div><div class="app-company">${app.company} • ${app.location}</div></div><div class="status-pill applied">Applied</div></div>
+          <div class="cover-letter">${app.cover_letter}</div>
+          <div class="app-date">📅 ${app.applied_at} • 💰 ${app.salary}</div>
+        </div>`).join('');
+      showToast(`🎉 Applied to ${data.applications.length} jobs!`);
+    } catch(e) { log('<span style="color:var(--danger)">[ERROR]</span> Check API key!'); }
+    btn.disabled = false; btn.innerHTML = '🚀 Start Agent';
+  }
+  async function updateStats() {
+    try {
+      const res = await fetch('/api/applications');
+      const data = await res.json();
+      document.getElementById('stat-applied').textContent = data.applications.length;
+      document.getElementById('stat-today').textContent = data.applications.length;
+      if(data.applications.length) {
+        document.getElementById('app-list').innerHTML = data.applications.map(app=>`
+          <div class="app-card">
+            <div class="app-header"><div><div class="app-title">${app.job_title}</div><div class="app-company">${app.company}</div></div><div class="status-pill applied">Applied</div></div>
+            <div class="cover-letter">${app.cover_letter}</div>
+            <div class="app-date">📅 ${app.applied_at}</div>
+          </div>`).join('');
+      }
+    } catch(e) {}
+  }
+  function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+  loadProfile(); updateStats();
+</script>
+</body>
+</html>
